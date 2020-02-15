@@ -16,9 +16,15 @@ pipeline {
         }
       }
     }
-    stage('Create EC2 instance') {
+    stage('Lint HTML') {
+        steps {
+          sh 'tidy -q -e *.html'
+        }
+    stage('Upload to AWS') {
       steps {
-        ansiblePlaybook playbook: "main.yaml", inventory: "inventory"
+        withAWS(region:'us-east-1',credentials:'aravn') {
+          s3Upload(pathStyleAccessEnabled:true, payloadSigningEnabled: true, file:'index.html', bucket:'aravn-udacity-projects')
+        }
       }
     }
   }
